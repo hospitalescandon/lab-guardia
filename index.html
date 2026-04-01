@@ -11,7 +11,7 @@
 :root{
   --bg:#e5eef8;
   --surface:#fffefe;
-  --surface2:#edecec;
+  --surface2:#f0f1f3;
   --border:#d3ddf0;
   --border2:#d5ddf1;
   --text:#29252b;
@@ -33,8 +33,8 @@
   --purple-dim:#ded8f9;
   --font-display:'Syne',sans-serif;
   --font-mono:'DM Mono',monospace;
-  --r:8px;
-  --r-lg:12px;
+  --r:10px;
+  --r-lg:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -247,7 +247,7 @@ tbody tr:first-child td{border-top:none}
 <!-- PAGE HEADER -->
 <header class="page-header">
   <div class="logo-mark">
-    <img src="src/logo.png" style="height: 54px; border-radius: 8px;">
+    <img src="src/logo.png" style="height: 54px; border-radius: var(--r);">
   </div>
   <div>
     <div class="page-title">Hospital Escandón: Laboratorio</div>
@@ -439,6 +439,7 @@ const equipos=[
   {n:'Vitros 5600',cat:'Química Clínica',status:'op'},
   {n:'Beckman DxH 500',cat:'Hematología',status:'op'},
   {n:'ACL Top 350',cat:'Coagulación',status:'op'},
+  { n: 'Vidas', cat: 'Inmunología', status: 'op' },
   {n:'Cliniteck Status',cat:'Urianálisis',status:'op'},
   {n:'Vitek',cat:'Microbiología',status:'op'},
   {n:'BactAlert',cat:'Microbiología',status:'op'},
@@ -451,6 +452,7 @@ const areas=[
   {n:'Química (Vitros 5600)',ctrl:null,calib:null,obs:''},
   {n:'Hematología (DxH 500)',ctrl:null,calib:null,obs:''},
   {n:'Coagulación (ACL Top 350)',ctrl:null,calib:null,obs:''},
+  { n: 'Inmunología (Vidas)', ctrl: null, calib: null, obs: '' },
   {n:'Urianálisis (Cliniteck)',ctrl:null,calib:null,obs:''},
 ];
 const pruebasRapidas=[
@@ -563,7 +565,7 @@ function crtRow(label,val,dec,inc){
 }
 function renderCartuchos(){
   const c=cartuchos;let h='';
-  h+=`<div class="crt-section-title">POC / Gases</div><div class="crt-grid" style="margin-bottom:1rem">`;
+  h+=`<div class="crt-section-title">Gasometrías</div><div class="crt-grid" style="margin-bottom:1rem">`;
   h+=crtRow('iStat',c.istat,'cartuchos.istat=Math.max(0,cartuchos.istat-1);renderCartuchos()','cartuchos.istat++;renderCartuchos()');
   h+=crtRow('Epoc',c.epoc,'cartuchos.epoc=Math.max(0,cartuchos.epoc-1);renderCartuchos()','cartuchos.epoc++;renderCartuchos()');
   h+=`</div><div class="crt-section-title">Film Array — paneles</div><div class="crt-grid" style="margin-bottom:1rem">`;
