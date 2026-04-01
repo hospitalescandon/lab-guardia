@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Entrega de Guardia — Laboratorio Digital</title>
+<title>Entrega de Guardia — Laboratorio HE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -250,8 +250,8 @@ tbody tr:first-child td{border-top:none}
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   </div>
   <div>
-    <div class="page-title">Laboratorio Digital</div>
-    <div class="page-sub">sistema de entrega de guardia</div>
+    <div class="page-title">Hospital Escandón: Laboratorio</div>
+    <div class="page-sub">Sistema de entrega de guardia</div>
   </div>
   <nav class="nav">
     <button class="nav-btn active" onclick="switchView('form',this)">Llenar guardia</button>
@@ -280,9 +280,9 @@ tbody tr:first-child td{border-top:none}
     <div class="field-group col-full">
       <span class="field-label">Turno</span>
       <div class="turno-row">
-        <button class="tb m" onclick="setTurno('Manana',this)">☀ Mañana</button>
-        <button class="tb t" onclick="setTurno('Tarde',this)">🌤 Tarde</button>
-        <button class="tb n" onclick="setTurno('Noche',this)">🌙 Noche</button>
+        <button class="tb m" onclick="setTurno('Manana',this)">Matutino</button>
+        <button class="tb t" onclick="setTurno('Tarde',this)">Vespertino</button>
+        <button class="tb n" onclick="setTurno('Noche',this)">Nocturno</button>
       </div>
     </div>
   </div>
@@ -329,7 +329,7 @@ tbody tr:first-child td{border-top:none}
 <!-- REACTIVOS -->
 <div class="card" style="animation-delay:.16s">
   <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-red"></span>Reactivos — incidencias</div>
+    <div class="card-title"><span class="pip pip-red"></span>Reactivos - incidencias</div>
     <button class="add-btn" onclick="toggleForm('fr-react')">+ agregar</button>
   </div>
   <div id="list-react"><div class="empty">sin incidencias registradas</div></div>
