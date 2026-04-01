@@ -9,28 +9,28 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0d0f12;
-  --surface:#141720;
-  --surface2:#1c2030;
-  --border:#252b3a;
-  --border2:#2e3650;
-  --text:#e8ecf4;
-  --muted:#7a87a8;
-  --faint:#3a4563;
-  --accent:#4f8ef7;
-  --accent-dim:#1e3870;
-  --green:#3ecf72;
-  --green-dim:#0e3320;
-  --amber:#f0a832;
-  --amber-dim:#3a2a08;
-  --red:#f05252;
-  --red-dim:#3a1212;
-  --teal:#2dd4bf;
-  --teal-dim:#0a2e2b;
-  --pink:#e879a0;
-  --pink-dim:#2e1028;
-  --purple:#a78bfa;
-  --purple-dim:#1e1640;
+  --bg:#e5eef8;
+  --surface:#fffefe;
+  --surface2:#edecec;
+  --border:#d3ddf0;
+  --border2:#d5ddf1;
+  --text:#29252b;
+  --muted:#565b67;
+  --faint:#130318;
+  --accent:#6399f6;
+  --accent-dim:#07369b;
+  --green:#03b444;
+  --green-dim:#d3f1e2;
+  --amber:#ef9402;
+  --amber-dim:#f7ecd2;
+  --red:#d50303;
+  --red-dim:#f9dada;
+  --teal:#05a28d;
+  --teal-dim:#e0f8f6;
+  --pink:#f73076;
+  --pink-dim:#f7ddf2;
+  --purple:#5d2cf1;
+  --purple-dim:#ded8f9;
   --font-display:'Syne',sans-serif;
   --font-mono:'DM Mono',monospace;
   --r:8px;
@@ -45,7 +45,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-display);min-
 
 /* Top header */
 .page-header{padding:2rem 0 1.5rem;border-bottom:1px solid var(--border);margin-bottom:2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.logo-mark{width:36px;height:36px;background:var(--accent);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark{width:60px;height:60px;background:var(--surface);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-mark svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .page-title{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
 .page-sub{font-size:13px;color:var(--muted);font-family:var(--font-mono);margin-top:1px}
@@ -106,8 +106,8 @@ tbody tr:first-child td{border-top:none}
 .p-op{background:var(--green-dim);color:var(--green);border:1px solid rgba(62,207,114,.2)}
 .p-fa{background:var(--red-dim);color:var(--red);border:1px solid rgba(240,82,82,.2)}
 .p-ma{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(240,168,50,.2)}
-.p-ap{background:#1a1f2e;color:var(--faint);border:1px solid var(--border)}
-.p-pend{background:#1a1f2e;color:var(--faint);border:1px solid var(--border)}
+.p-ap{background:#e5eef8;color:var(--faint);border:1px solid var(--border)}
+.p-pend{background:#e5eef8;color:var(--faint);border:1px solid var(--border)}
 .p-prel{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(240,168,50,.2)}
 .p-final{background:var(--green-dim);color:var(--green);border:1px solid rgba(62,207,114,.2)}
 
@@ -131,7 +131,7 @@ tbody tr:first-child td{border-top:none}
 .iss{font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid var(--border2);cursor:pointer;background:transparent;color:var(--muted);font-family:var(--font-mono);font-weight:600;transition:all .12s}
 .iss.fallo.active{background:var(--red-dim);border-color:rgba(240,82,82,.4);color:var(--red)}
 .iss.falto.active{background:var(--amber-dim);border-color:rgba(240,168,50,.4);color:var(--amber)}
-.iss.acabo.active{background:#1a1f2e;border-color:var(--faint);color:var(--muted)}
+.iss.acabo.active{background:#e5eef8;border-color:var(--faint);color:var(--muted)}
 
 /* Cartuchos */
 .crt-section-title{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;margin:1.25rem 0 .75rem}
@@ -156,7 +156,7 @@ tbody tr:first-child td{border-top:none}
 .rb{font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid var(--border2);cursor:pointer;background:transparent;color:var(--muted);font-family:var(--font-mono);font-weight:600;transition:all .12s}
 .rb.falto.active{background:var(--amber-dim);border-color:rgba(240,168,50,.4);color:var(--amber)}
 .rb.fallo.active{background:var(--red-dim);border-color:rgba(240,82,82,.4);color:var(--red)}
-.rb.acabo.active{background:#1a1f2e;border-color:var(--faint);color:var(--muted)}
+.rb.acabo.active{background:#e5eef8;border-color:var(--faint);color:var(--muted)}
 
 /* Add btn */
 .add-btn{font-size:12px;padding:5px 14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font-mono);font-weight:600;transition:all .12s}
@@ -164,8 +164,8 @@ tbody tr:first-child td{border-top:none}
 .add-form{display:none;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:flex-start}
 .add-form.show{display:flex}
 .add-form input,.add-form select{flex:1;min-width:120px;width:auto}
-.add-form button{padding:8px 16px;font-size:13px;font-family:var(--font-display);font-weight:600;border:1px solid var(--accent-dim);border-radius:var(--r);background:var(--accent-dim);color:var(--accent);cursor:pointer;white-space:nowrap;transition:all .12s}
-.add-form button:hover{background:var(--accent);color:#fff}
+.add-form button{padding:8px 16px;font-size:13px;font-family:var(--font-display);font-weight:600;border:1px solid var(--accent);border-radius:var(--r);background:var(--accent);color:var(--text);cursor:pointer;white-space:nowrap;transition:all .12s}
+.add-form button:hover{background:var(--accent-dim);color:#fff}
 .ti{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font-display);font-size:12px;padding:5px 8px;width:100%}
 .ti:focus{outline:none;border-color:var(--accent)}
 .empty{font-size:13px;color:var(--faint);font-family:var(--font-mono);padding:4px 0;font-style:italic}
@@ -247,7 +247,7 @@ tbody tr:first-child td{border-top:none}
 <!-- PAGE HEADER -->
 <header class="page-header">
   <div class="logo-mark">
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <img src="src/logo.png" style="height: 54px; border-radius: 8px;">
   </div>
   <div>
     <div class="page-title">Hospital Escandón: Laboratorio</div>
@@ -436,26 +436,26 @@ let turno='';
 const statusMap={op:{l:'Operativo',c:'p-op'},fa:{l:'Con falla',c:'p-fa'},ma:{l:'Mantenimiento',c:'p-ma'},ap:{l:'Apagado',c:'p-ap'}};
 
 const equipos=[
-  {n:'Vitros 5600',cat:'Química',status:'op'},
-  {n:'Beckman DX500',cat:'Hematología',status:'op'},
+  {n:'Vitros 5600',cat:'Química Clínica',status:'op'},
+  {n:'Beckman DxH 500',cat:'Hematología',status:'op'},
   {n:'ACL Top 350',cat:'Coagulación',status:'op'},
   {n:'Cliniteck Status',cat:'Urianálisis',status:'op'},
   {n:'Vitek',cat:'Microbiología',status:'op'},
   {n:'BactAlert',cat:'Microbiología',status:'op'},
   {n:'Film Array',cat:'Microbiología',status:'op'},
   {n:'RAMP',cat:'Pruebas rápidas',status:'op'},
-  {n:'iStat',cat:'Gases / POC',status:'op'},
-  {n:'Epoc',cat:'Gases / POC',status:'op'},
+  {n:'iStat',cat:'Q.C. / POC',status:'op'},
+  {n:'Epoc',cat:'Q.C. / POC',status:'op'},
 ];
 const areas=[
   {n:'Química (Vitros 5600)',ctrl:null,calib:null,obs:''},
-  {n:'Hematología (DX500)',ctrl:null,calib:null,obs:''},
+  {n:'Hematología (DxH 500)',ctrl:null,calib:null,obs:''},
   {n:'Coagulación (ACL Top 350)',ctrl:null,calib:null,obs:''},
   {n:'Urianálisis (Cliniteck)',ctrl:null,calib:null,obs:''},
 ];
 const pruebasRapidas=[
-  {n:'VIH',usado:0,fallo:false,falto:false,acabo:false},
-  {n:'Embarazo',usado:0,fallo:false,falto:false,acabo:false},
+  {n:'HIV',usado:0,fallo:false,falto:false,acabo:false},
+  {n:'Embarazo (PIE)',usado:0,fallo:false,falto:false,acabo:false},
   {n:'Drogas',usado:0,fallo:false,falto:false,acabo:false},
   {n:'Clostridium toxina A y B',usado:0,fallo:false,falto:false,acabo:false},
   {n:'Sangre oculta en heces',usado:0,fallo:false,falto:false,acabo:false},
