@@ -1,238 +1,389 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Entrega de Guardia — Laboratorio HE</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-<div class="shell">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Entrega de Guardia — Laboratorio HE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <!-- PAGE HEADER -->
+      <header class="page-header">
+        <div class="logo-mark">
+          <img
+            src="src/logo.png"
+            style="height: 54px; border-radius: var(--r)"
+          />
+        </div>
+        <div>
+          <div class="page-title">Hospital Escandón: Laboratorio</div>
+          <div class="page-sub">Sistema de entrega de guardia</div>
+        </div>
+        <nav class="nav">
+          <button class="nav-btn active" onclick="switchView('form', this)">
+            Llenar guardia
+          </button>
+          <button class="nav-btn" onclick="switchView('history', this)">
+            Historial
+          </button>
+        </nav>
+      </header>
 
-<!-- PAGE HEADER -->
-<header class="page-header">
-  <div class="logo-mark">
-    <img src="src/logo.png" style="height: 54px; border-radius: var(--r);">
-  </div>
-  <div>
-    <div class="page-title">Hospital Escandón: Laboratorio</div>
-    <div class="page-sub">Sistema de entrega de guardia</div>
-  </div>
-  <nav class="nav">
-    <button class="nav-btn active" onclick="switchView('form',this)">Llenar guardia</button>
-    <button class="nav-btn" onclick="switchView('history',this)">Historial</button>
-  </nav>
-</header>
+      <!-- FORM VIEW -->
+      <div id="view-form">
+        <!-- VALIDATION ERRORS PANEL -->
+        <div id="validation-errors" class="validation-errors">
+          <div class="validation-errors-title">
+            ⚠ Por favor completa los campos obligatorios
+          </div>
+          <ul id="error-list" class="validation-errors-list"></ul>
+        </div>
 
-<!-- FORM VIEW -->
-<div id="view-form">
+        <!-- IDENTIFICACIÓN -->
+        <div class="card" style="animation-delay: 0.05s">
+          <div class="grid-3">
+            <div class="field-group">
+              <span class="field-label">Guardia saliente *</span>
+              <input type="text" id="g-sale" placeholder="Nombre completo" />
+              <span class="error-msg" id="error-sale"
+                >Este campo es obligatorio</span
+              >
+            </div>
+            <div class="field-group">
+              <span class="field-label">Guardia entrante *</span>
+              <input type="text" id="g-entra" placeholder="Nombre completo" />
+              <span class="error-msg" id="error-entra"
+                >Este campo es obligatorio</span
+              >
+            </div>
+            <div class="field-group">
+              <span class="field-label">Fecha *</span>
+              <input type="date" id="fecha" />
+              <span class="error-msg" id="error-fecha"
+                >La fecha es obligatoria</span
+              >
+            </div>
+            <div class="field-group col-full">
+              <span class="field-label">Turno *</span>
+              <div class="turno-row">
+                <button class="tb m" onclick="setTurno('Manana', this)">
+                  Matutino
+                </button>
+                <button class="tb t" onclick="setTurno('Tarde', this)">
+                  Vespertino
+                </button>
+                <button class="tb n" onclick="setTurno('Noche', this)">
+                  Nocturno
+                </button>
+              </div>
+              <span class="error-msg" id="error-turno"
+                >Selecciona un turno</span
+              >
+            </div>
+          </div>
+        </div>
 
-<!-- VALIDATION ERRORS PANEL -->
-<div id="validation-errors" class="validation-errors">
-  <div class="validation-errors-title">⚠ Por favor completa los campos obligatorios</div>
-  <ul id="error-list" class="validation-errors-list"></ul>
-</div>
+        <!-- EQUIPOS -->
+        <div class="card" style="animation-delay: 0.08s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-blue"></span>Estado de equipos
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Equipo</th>
+                  <th>Área</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="eq-body"></tbody>
+            </table>
+          </div>
+        </div>
 
-<!-- IDENTIFICACIÓN -->
-<div class="card" style="animation-delay:.05s">
-  <div class="grid-3">
-    <div class="field-group">
-      <span class="field-label">Guardia saliente *</span>
-      <input type="text" id="g-sale" placeholder="Nombre completo">
-      <span class="error-msg" id="error-sale">Este campo es obligatorio</span>
-    </div>
-    <div class="field-group">
-      <span class="field-label">Guardia entrante *</span>
-      <input type="text" id="g-entra" placeholder="Nombre completo">
-      <span class="error-msg" id="error-entra">Este campo es obligatorio</span>
-    </div>
-    <div class="field-group">
-      <span class="field-label">Fecha *</span>
-      <input type="date" id="fecha">
-      <span class="error-msg" id="error-fecha">La fecha es obligatoria</span>
-    </div>
-    <div class="field-group col-full">
-      <span class="field-label">Turno *</span>
-      <div class="turno-row">
-        <button class="tb m" onclick="setTurno('Manana',this)">Matutino</button>
-        <button class="tb t" onclick="setTurno('Tarde',this)">Vespertino</button>
-        <button class="tb n" onclick="setTurno('Noche',this)">Nocturno</button>
+        <!-- CONTROLES Y CALIBRADORES -->
+        <div class="card" style="animation-delay: 0.1s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-teal"></span>Controles y calibradores
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width: 170px">Área / Equipo</th>
+                  <th style="min-width: 90px">Controles</th>
+                  <th style="min-width: 90px">Calibradores</th>
+                  <th>Observación</th>
+                </tr>
+              </thead>
+              <tbody id="area-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PRUEBAS RAPIDAS -->
+        <div class="card" style="animation-delay: 0.12s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-purple"></span>Pruebas rápidas
+            </div>
+          </div>
+          <div class="pr-grid" id="pr-grid"></div>
+        </div>
+
+        <!-- CARTUCHOS -->
+        <div class="card" style="animation-delay: 0.14s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-pink"></span>Cartuchos utilizados
+            </div>
+          </div>
+          <div id="crt-content"></div>
+        </div>
+
+        <!-- REACTIVOS -->
+        <div class="card" style="animation-delay: 0.16s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-red"></span>Reactivos - incidencias
+            </div>
+            <button class="add-btn" onclick="toggleForm('fr-react')">
+              + agregar
+            </button>
+          </div>
+          <div id="list-react">
+            <div class="empty">sin incidencias registradas</div>
+          </div>
+          <div id="fr-react" class="add-form">
+            <input
+              type="text"
+              id="in-react"
+              placeholder="Nombre del reactivo / equipo..."
+              onkeydown="if (event.key === 'Enter') addReact();"
+            />
+            <button onclick="addReact()">Agregar</button>
+          </div>
+        </div>
+
+        <!-- MAQUILA -->
+        <div class="card" style="animation-delay: 0.18s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-amber"></span>Maquila
+            </div>
+            <button class="add-btn" onclick="addMaquila()">
+              + agregar estudio
+            </button>
+          </div>
+          <div id="maquila-content">
+            <div class="empty">sin estudios de maquila</div>
+          </div>
+        </div>
+
+        <!-- MICROBIOLOGÍA -->
+        <div class="card" style="animation-delay: 0.2s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-green"></span>Microbiología
+            </div>
+          </div>
+          <div class="sub-heading">
+            Cultivos
+            <button class="add-btn" onclick="addCultivo()">+ agregar</button>
+          </div>
+          <div id="cultivos-content">
+            <div class="empty">sin cultivos registrados</div>
+          </div>
+          <div class="micro-div"></div>
+          <div class="sub-heading">
+            Placas sembradas
+            <button class="add-btn" onclick="addPlaca()">+ agregar</button>
+          </div>
+          <div id="placas-content">
+            <div class="empty">sin placas registradas</div>
+          </div>
+        </div>
+
+        <!-- TAREAS REALIZADAS -->
+        <div class="card" style="animation-delay: 0.22s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-green"></span>Tareas realizadas
+            </div>
+            <button class="add-btn" onclick="toggleForm('fr-real')">
+              + agregar
+            </button>
+          </div>
+          <div id="list-real"><div class="empty">sin tareas</div></div>
+          <div id="fr-real" class="add-form">
+            <input
+              type="text"
+              id="in-real"
+              placeholder="Tarea realizada..."
+              onkeydown="if (event.key === 'Enter') addTask('real');"
+            />
+            <button onclick="addTask('real')">Agregar</button>
+          </div>
+        </div>
+
+        <!-- PENDIENTES -->
+        <div class="card" style="animation-delay: 0.24s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-amber"></span>Tareas pendientes
+            </div>
+            <button class="add-btn" onclick="toggleForm('fr-pend')">
+              + agregar
+            </button>
+          </div>
+          <div id="list-pend"><div class="empty">sin pendientes</div></div>
+          <div id="fr-pend" class="add-form">
+            <input
+              type="text"
+              id="in-pend"
+              placeholder="Tarea pendiente..."
+              onkeydown="if (event.key === 'Enter') addTask('pend');"
+            />
+            <select id="prio" style="width: auto; flex: 0">
+              <option value="alta">Alta</option>
+              <option value="media" selected>Media</option>
+              <option value="baja">Baja</option>
+            </select>
+            <button onclick="addTask('pend')">Agregar</button>
+          </div>
+        </div>
+
+        <!-- INCIDENCIAS -->
+        <div class="card" style="animation-delay: 0.26s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-red"></span>Incidencias / problemas
+            </div>
+            <button class="add-btn" onclick="toggleForm('fr-inc')">
+              + agregar
+            </button>
+          </div>
+          <div id="list-inc"><div class="empty">sin incidencias</div></div>
+          <div id="fr-inc" class="add-form">
+            <input
+              type="text"
+              id="in-inc"
+              placeholder="Incidencia o problema..."
+              onkeydown="if (event.key === 'Enter') addTask('inc');"
+            />
+            <button onclick="addTask('inc')">Agregar</button>
+          </div>
+        </div>
+
+        <!-- OBSERVACIONES -->
+        <div class="card" style="animation-delay: 0.28s">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="pip pip-faint"></span>Observaciones generales
+            </div>
+          </div>
+          <div class="field-group">
+            <textarea
+              id="obs"
+              rows="4"
+              placeholder="Notas adicionales, mensajes importantes para el turno entrante..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+          <button class="btn-default" onclick="guardarEntrega()">
+            Guardar entrega
+          </button>
+          <button class="btn-default" onclick="genResumen()">
+            Ver resumen
+          </button>
+          <button
+            class="btn-default"
+            onclick="window.print()"
+            style="display: none"
+          >
+            Imprimir
+          </button>
+          <button
+            class="btn-default"
+            onclick="exportPDF()"
+            style="margin-left: 8px"
+          >
+            Imprimir / Exportar PDF
+          </button>
+        </div>
+
+        <!-- RESUMEN BANNER -->
+        <div class="summary" id="resumen-box"></div>
       </div>
-      <span class="error-msg" id="error-turno">Selecciona un turno</span>
+      <!-- /view-form -->
+
+      <!-- HISTORY VIEW -->
+      <div id="view-history" style="display: none">
+        <div
+          style="
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+          "
+        >
+          Historial de guardias
+        </div>
+
+        <!-- FILTERS BAR -->
+        <div class="filters-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              id="hist-search"
+              placeholder="Buscar por nombre..."
+              oninput="filterHistory()"
+            />
+          </div>
+          <div class="filter-group">
+            <label>Fecha:</label>
+            <input type="date" id="hist-date" onchange="filterHistory()" />
+          </div>
+          <div class="filter-group">
+            <label>Turno:</label>
+            <select id="hist-turno" onchange="filterHistory()">
+              <option value="">Todos</option>
+              <option value="Manana">Matutino</option>
+              <option value="Tarde">Vespertino</option>
+              <option value="Noche">Nocturno</option>
+            </select>
+          </div>
+          <button class="btn-clear" onclick="clearFilters()">
+            Limpiar filtros
+          </button>
+        </div>
+
+        <div id="hist-list">
+          <div class="hist-empty">Cargando entregas guardadas...</div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+    <!-- /shell -->
+    <div class="toast" id="toast"></div>
 
-<!-- EQUIPOS -->
-<div class="card" style="animation-delay:.08s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-blue"></span>Estado de equipos</div>
-  </div>
-  <div class="tbl-wrap">
-    <table><thead><tr><th>Equipo</th><th>Área</th><th>Estado</th><th></th></tr></thead>
-    <tbody id="eq-body"></tbody></table>
-  </div>
-</div>
-
-<!-- CONTROLES Y CALIBRADORES -->
-<div class="card" style="animation-delay:.10s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-teal"></span>Controles y calibradores</div>
-  </div>
-  <div class="tbl-wrap">
-    <table><thead><tr><th style="min-width:170px">Área / Equipo</th><th style="min-width:90px">Controles</th><th style="min-width:90px">Calibradores</th><th>Observación</th></tr></thead>
-    <tbody id="area-body"></tbody></table>
-  </div>
-</div>
-
-<!-- PRUEBAS RAPIDAS -->
-<div class="card" style="animation-delay:.12s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-purple"></span>Pruebas rápidas</div>
-  </div>
-  <div class="pr-grid" id="pr-grid"></div>
-</div>
-
-<!-- CARTUCHOS -->
-<div class="card" style="animation-delay:.14s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-pink"></span>Cartuchos utilizados</div>
-  </div>
-  <div id="crt-content"></div>
-</div>
-
-<!-- REACTIVOS -->
-<div class="card" style="animation-delay:.16s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-red"></span>Reactivos - incidencias</div>
-    <button class="add-btn" onclick="toggleForm('fr-react')">+ agregar</button>
-  </div>
-  <div id="list-react"><div class="empty">sin incidencias registradas</div></div>
-  <div id="fr-react" class="add-form">
-    <input type="text" id="in-react" placeholder="Nombre del reactivo / equipo..." onkeydown="if(event.key==='Enter')addReact()">
-    <button onclick="addReact()">Agregar</button>
-  </div>
-</div>
-
-<!-- MAQUILA -->
-<div class="card" style="animation-delay:.18s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-amber"></span>Maquila</div>
-    <button class="add-btn" onclick="addMaquila()">+ agregar estudio</button>
-  </div>
-  <div id="maquila-content"><div class="empty">sin estudios de maquila</div></div>
-</div>
-
-<!-- MICROBIOLOGÍA -->
-<div class="card" style="animation-delay:.20s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-green"></span>Microbiología</div>
-  </div>
-  <div class="sub-heading">Cultivos <button class="add-btn" onclick="addCultivo()">+ agregar</button></div>
-  <div id="cultivos-content"><div class="empty">sin cultivos registrados</div></div>
-  <div class="micro-div"></div>
-  <div class="sub-heading">Placas sembradas <button class="add-btn" onclick="addPlaca()">+ agregar</button></div>
-  <div id="placas-content"><div class="empty">sin placas registradas</div></div>
-</div>
-
-<!-- TAREAS REALIZADAS -->
-<div class="card" style="animation-delay:.22s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-green"></span>Tareas realizadas</div>
-    <button class="add-btn" onclick="toggleForm('fr-real')">+ agregar</button>
-  </div>
-  <div id="list-real"><div class="empty">sin tareas</div></div>
-  <div id="fr-real" class="add-form">
-    <input type="text" id="in-real" placeholder="Tarea realizada..." onkeydown="if(event.key==='Enter')addTask('real')">
-    <button onclick="addTask('real')">Agregar</button>
-  </div>
-</div>
-
-<!-- PENDIENTES -->
-<div class="card" style="animation-delay:.24s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-amber"></span>Tareas pendientes</div>
-    <button class="add-btn" onclick="toggleForm('fr-pend')">+ agregar</button>
-  </div>
-  <div id="list-pend"><div class="empty">sin pendientes</div></div>
-  <div id="fr-pend" class="add-form">
-    <input type="text" id="in-pend" placeholder="Tarea pendiente..." onkeydown="if(event.key==='Enter')addTask('pend')">
-    <select id="prio" style="width:auto;flex:0"><option value="alta">Alta</option><option value="media" selected>Media</option><option value="baja">Baja</option></select>
-    <button onclick="addTask('pend')">Agregar</button>
-  </div>
-</div>
-
-<!-- INCIDENCIAS -->
-<div class="card" style="animation-delay:.26s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-red"></span>Incidencias / problemas</div>
-    <button class="add-btn" onclick="toggleForm('fr-inc')">+ agregar</button>
-  </div>
-  <div id="list-inc"><div class="empty">sin incidencias</div></div>
-  <div id="fr-inc" class="add-form">
-    <input type="text" id="in-inc" placeholder="Incidencia o problema..." onkeydown="if(event.key==='Enter')addTask('inc')">
-    <button onclick="addTask('inc')">Agregar</button>
-  </div>
-</div>
-
-<!-- OBSERVACIONES -->
-<div class="card" style="animation-delay:.28s">
-  <div class="card-hdr">
-    <div class="card-title"><span class="pip pip-faint"></span>Observaciones generales</div>
-  </div>
-  <div class="field-group">
-    <textarea id="obs" rows="4" placeholder="Notas adicionales, mensajes importantes para el turno entrante..."></textarea>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<div class="footer">
-  <button class="btn-save" onclick="guardarEntrega()">Guardar entrega</button>
-  <button class="btn-sum" onclick="genResumen()">Ver resumen</button>
-  <button class="btn-print" onclick="window.print()" style="display: none">Imprimir</button>
-  <button class="btn-print" onclick="exportPDF()" style="margin-left:8px">Imprimir / Exportar PDF</button>
-</div>
-
-<!-- RESUMEN BANNER -->
-<div class="summary" id="resumen-box"></div>
-
-</div><!-- /view-form -->
-
-<!-- HISTORY VIEW -->
-<div id="view-history" style="display:none">
-  <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:1.5rem;letter-spacing:-.02em">Historial de guardias</div>
-  
-  <!-- FILTERS BAR -->
-  <div class="filters-bar">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="hist-search" placeholder="Buscar por nombre..." oninput="filterHistory()">
-    </div>
-    <div class="filter-group">
-      <label>Fecha:</label>
-      <input type="date" id="hist-date" onchange="filterHistory()">
-    </div>
-    <div class="filter-group">
-      <label>Turno:</label>
-      <select id="hist-turno" onchange="filterHistory()">
-        <option value="">Todos</option>
-        <option value="Manana">Matutino</option>
-        <option value="Tarde">Vespertino</option>
-        <option value="Noche">Nocturno</option>
-      </select>
-    </div>
-    <button class="btn-clear" onclick="clearFilters()">Limpiar filtros</button>
-  </div>
-  
-  <div id="hist-list"><div class="hist-empty">Cargando entregas guardadas...</div></div>
-</div>
-
-</div><!-- /shell -->
-<div class="toast" id="toast"></div>
-
-<script src="js/app.js"></script>
-</body>
+    <script src="js/app.js"></script>
+  </body>
 </html>

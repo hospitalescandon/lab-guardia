@@ -7,7 +7,7 @@
   --text:#29252b;
   --muted:#565b67;
   --faint:#130318;
-  --accent:#6399f6;
+  --accent:#4286fb;
   --accent-dim:#07369b;
   --green:#03b444;
   --green-dim:#d3f1e2;
@@ -23,8 +23,8 @@
   --purple-dim:#ded8f9;
   --font-display:'Syne',sans-serif;
   --font-mono:'DM Mono',monospace;
-  --r:10px;
-  --r-lg:14px;
+  --r:16px;
+  --r-lg:20px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -114,7 +114,7 @@ tbody tr:first-child td{border-top:none}
 .tgl.no.active{background:var(--red-dim);border-color:rgba(240,82,82,.4);color:var(--red)}
 
 /* Pruebas rapidas grid */
-.pr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.pr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px}
 .pr-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px}
 .pr-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;line-height:1.4;min-height:30px}
 .pr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -132,7 +132,7 @@ tbody tr:first-child td{border-top:none}
 /* Cartuchos */
 .crt-section-title{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;margin:1.25rem 0 .75rem}
 .crt-section-title:first-child{margin-top:0}
-.crt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:8px}
+.crt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px}
 .crt-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
 .crt-name{font-size:13px;color:var(--text)}
 
@@ -160,7 +160,7 @@ tbody tr:first-child td{border-top:none}
 .add-form{display:none;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:flex-start}
 .add-form.show{display:flex}
 .add-form input,.add-form select{flex:1;min-width:120px;width:auto}
-.add-form button{padding:8px 16px;font-size:13px;font-family:var(--font-display);font-weight:600;border:1px solid var(--accent);border-radius:var(--r);background:var(--accent);color:var(--text);cursor:pointer;white-space:nowrap;transition:all .12s}
+.add-form button{padding:8px 16px;font-size:13px;font-family:var(--font-display);font-weight:600;border:1px solid var(--accent);border-radius:var(--r);background:var(--accent);color:var(--surface);cursor:pointer;white-space:nowrap;transition:all .12s}
 .add-form button:hover{background:var(--accent-dim);color:#fff}
 .ti{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font-display);font-size:12px;padding:5px 8px;width:100%}
 .ti:focus{outline:none;border-color:var(--accent)}
@@ -172,12 +172,8 @@ tbody tr:first-child td{border-top:none}
 
 /* Footer */
 .footer{display:flex;gap:10px;margin-top:2rem;flex-wrap:wrap;align-items:center;padding-top:1.5rem;border-top:1px solid var(--border)}
-.btn-save{font-size:14px;padding:10px 24px;border:none;border-radius:var(--r);background:var(--accent);color:#fff;cursor:pointer;font-family:var(--font-display);font-weight:600;letter-spacing:.02em;transition:all .15s}
-.btn-save:hover{background:#6fa4f9;transform:translateY(-1px)}
-.btn-sum{font-size:14px;padding:10px 24px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font-display);font-weight:600;transition:all .15s}
-.btn-sum:hover{background:var(--surface2)}
-.btn-print{font-size:13px;padding:10px 18px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font-mono);transition:all .12s}
-.btn-print:hover{color:var(--text)}
+.btn-default{font-size:14px;padding:10px 24px;border:none;border-radius:var(--r);background:var(--accent);color:#fff;cursor:pointer;font-family:var(--font-display);font-weight:600;letter-spacing:.02em;transition:all .15s}
+.btn-default:hover{background:#6fa4f9;transform:translateY(-1px)}
 
 /* Summary banner */
 .summary{display:none;background:var(--surface);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:var(--r-lg);padding:1.5rem;margin-top:1.5rem;animation:fadeUp .3s ease}
