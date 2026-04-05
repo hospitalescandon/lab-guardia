@@ -12,6 +12,9 @@ const statusMap = {
   ap: { l: 'Apagado', c: 'p-ap' }
 };
 
+// Clave para localStorage
+const STORAGE_KEY = 'guardia_draft';
+
 // ==================== DATOS ====================
 const equipos = [
   { n: 'Vitros 5600', cat: 'Química Clínica', status: 'op' },
@@ -61,8 +64,133 @@ const tasks = { real: [], pend: [], inc: [] };
 // ==================== INICIALIZACIÓN ====================
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+  loadDraft(); // Cargar borrador guardado
+  setupAutoSave(); // Configurar guardado automático
   renderAll();
 });
+
+// ==================== LOCALSTORAGE - GUARDADO AUTOMÁTICO ====================
+function setupAutoSave() {
+  // Campos de texto simples
+  const textFields = ['g-sale', 'g-entra', 'fecha', 'obs'];
+  textFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', saveDraft);
+  });
+}
+
+function saveDraft() {
+  const draft = {
+    turno,
+    fecha: document.getElementById('fecha').value,
+    sale: document.getElementById('g-sale').value,
+    entra: document.getElementById('g-entra').value,
+    obs: document.getElementById('obs').value,
+    equipos: JSON.parse(JSON.stringify(equipos)),
+    areas: JSON.parse(JSON.stringify(areas)),
+    pruebasRapidas: JSON.parse(JSON.stringify(pruebasRapidas)),
+    cartuchos: JSON.parse(JSON.stringify(cartuchos)),
+    reactivos: JSON.parse(JSON.stringify(reactivos)),
+    maquila: JSON.parse(JSON.stringify(maquila)),
+    cultivos: JSON.parse(JSON.stringify(cultivos)),
+    placas: JSON.parse(JSON.stringify(placas)),
+    tasks: JSON.parse(JSON.stringify(tasks)),
+    savedAt: new Date().toISOString()
+  };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+  } catch (e) { console.error('Error guardando borrador:', e); }
+}
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    
+    // Restaurar campos simples
+    if (d.fecha) document.getElementById('fecha').value = d.fecha;
+    if (d.sale) document.getElementById('g-sale').value = d.sale;
+    if (d.entra) document.getElementById('g-entra').value = d.entra;
+    if (d.obs) document.getElementById('obs').value = d.obs;
+    if (d.turno) {
+      turno = d.turno;
+      document.querySelectorAll('.tb').forEach(b => {
+        b.classList.remove('active');
+        if ((turno === 'Manana' && b.classList.contains('m')) ||
+            (turno === 'Tarde' && b.classList.contains('t')) ||
+            (turno === 'Noche' && b.classList.contains('n'))) {
+          b.classList.add('active');
+        }
+      });
+    }
+    
+    // Restaurar datos complejos
+    if (d.equipos) d.equipos.forEach((e, i) => { if (equipos[i]) equipos[i].status = e.status; });
+    if (d.areas) d.areas.forEach((a, i) => { if (areas[i]) { areas[i].ctrl = a.ctrl; areas[i].calib = a.calib; areas[i].obs = a.obs; } });
+    if (d.pruebasRapidas) d.pruebasRapidas.forEach((p, i) => { if (pruebasRapidas[i]) { pruebasRapidas[i].usado = p.usado; pruebasRapidas[i].fallo = p.fallo; pruebasRapidas[i].falto = p.falto; pruebasRapidas[i].acabo = p.acabo; } });
+    if (d.cartuchos) Object.assign(cartuchos, d.cartuchos);
+    if (d.reactivos) reactivos = d.reactivos;
+    if (d.maquila) maquila = d.maquila;
+    if (d.cultivos) cultivos = d.cultivos;
+    if (d.placas) placas = d.placas;
+    if (d.tasks) Object.assign(tasks, d.tasks);
+    
+    showToast('Borrador recuperado', false);
+  } catch (e) { console.error('Error cargando borrador:', e); }
+}
+
+function clearAllData() {
+  if (!confirm('¿Estás seguro de que quieres borrar todos los datos?\n\nEsta acción no se puede deshacer.')) return;
+  
+  // Limpiar campos de texto
+  document.getElementById('g-sale').value = '';
+  document.getElementById('g-entra').value = '';
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('obs').value = '';
+  
+  // Resetear turno
+  turno = '';
+  document.querySelectorAll('.tb').forEach(b => b.classList.remove('active'));
+  
+  // Resetear equipos
+  equipos.forEach(e => e.status = 'op');
+  
+  // Resetear áreas
+  areas.forEach(a => { a.ctrl = null; a.calib = null; a.obs = ''; });
+  
+  // Resetear pruebas rápidas
+  pruebasRapidas.forEach(p => { p.usado = 0; p.fallo = false; p.falto = false; p.acabo = false; });
+  
+  // Resetear cartuchos
+  cartuchos.istat = 0;
+  cartuchos.epoc = 0;
+  Object.keys(cartuchos.filmarray).forEach(k => cartuchos.filmarray[k] = 0);
+  Object.keys(cartuchos.ramp).forEach(k => cartuchos.ramp[k] = 0);
+  
+  // Limpiar arrays
+  reactivos = [];
+  maquila = [];
+  cultivos = [];
+  placas = [];
+  tasks.real = [];
+  tasks.pend = [];
+  tasks.inc = [];
+  
+  // Eliminar borrador de localStorage
+  localStorage.removeItem(STORAGE_KEY);
+  
+  // Re-renderizar todo
+  renderAll();
+  
+  // Ocultar panel de errores
+  document.getElementById('validation-errors').classList.remove('show');
+  
+  // Ocultar resumen
+  document.getElementById('resumen-box').classList.remove('show');
+  
+  showToast('Todos los datos han sido borrados');
+}
 
 function renderAll() {
   renderEquipos();
@@ -141,6 +269,7 @@ function setTurno(t, el) {
     b.classList.remove('active', 'error');
   });
   el.classList.add('active');
+  saveDraft();
 }
 
 function toggleForm(id) {
@@ -176,6 +305,7 @@ function renderEquipos() {
       <td><span class="pill ${s.c}">${s.l}</span></td>
     </tr>`;
   }).join('');
+  saveDraft();
 }
 
 // ==================== CONTROLES ====================
@@ -191,8 +321,9 @@ function renderAreas() {
         <button class="tgl yes${a.calib === true ? ' active' : ''}" onclick="areas[${i}].calib=true;renderAreas()">Sí</button>
         <button class="tgl no${a.calib === false ? ' active' : ''}" onclick="areas[${i}].calib=false;renderAreas()">No</button>
       </div></td>
-      <td><input class="ti" type="text" placeholder="Observación..." value="${a.obs}" oninput="areas[${i}].obs=this.value"></td>
+      <td><input class="ti" type="text" placeholder="Observación..." value="${a.obs}" oninput="areas[${i}].obs=this.value;saveDraft()"></td>
     </tr>`).join('');
+  saveDraft();
 }
 
 // ==================== PRUEBAS RÁPIDAS ====================
@@ -213,6 +344,7 @@ function renderPR() {
         <button class="iss acabo${p.acabo ? ' active' : ''}" onclick="pruebasRapidas[${i}].acabo=!pruebasRapidas[${i}].acabo;renderPR()">se acabó</button>
       </div>
     </div>`).join('');
+  saveDraft();
 }
 
 // ==================== CARTUCHOS ====================
@@ -238,6 +370,7 @@ function renderCartuchos() {
   });
   h += `</div>`;
   document.getElementById('crt-content').innerHTML = h;
+  saveDraft();
 }
 
 // ==================== REACTIVOS ====================
@@ -253,6 +386,7 @@ function renderReactivos() {
     </div>
     <button class="xbtn" onclick="reactivos.splice(${i},1);renderReactivos()">×</button>
   </div>`).join('');
+  saveDraft();
 }
 
 function addReact() {
@@ -262,6 +396,7 @@ function addReact() {
   reactivos.push({ n: v, falto: false, fallo: false, acabo: false });
   i.value = '';
   renderReactivos();
+  saveDraft();
 }
 
 // ==================== MAQUILA ====================
@@ -269,10 +404,11 @@ function renderMaquila() {
   const el = document.getElementById('maquila-content');
   if (!maquila.length) { el.innerHTML = '<div class="empty">sin estudios de maquila</div>'; return; }
   const rows = maquila.map((m, i) => `<tr>
-    <td><input class="ti" type="text" value="${m.pac}" placeholder="Paciente" oninput="maquila[${i}].pac=this.value" style="min-width:90px"></td>
-    <td><input class="ti" type="text" value="${m.folio}" placeholder="Folio" oninput="maquila[${i}].folio=this.value" style="min-width:60px"></td>
-    <td><input class="ti" type="text" value="${m.estudio}" placeholder="Estudio" oninput="maquila[${i}].estudio=this.value" style="min-width:100px"></td>
-    <td><input class="ti" type="text" value="${m.lab}" placeholder="Laboratorio" oninput="maquila[${i}].lab=this.value" style="min-width:100px"></td>
+    <td><input class="ti" type="text" value="${m.pac}" placeholder="Paciente" oninput="maquila[${i}].pac=this.value;saveDraft()" style="min-width:90px"></td>
+    <td><input class="ti" type="text" value="${m.folio}" placeholder="Folio" oninput="maquila[${i}].folio=this.value;saveDraft()" style="min-width:60px"></td>
+    <td><input class="ti" type="text" value="${m.estudio}" placeholder="Estudio" oninput="maquila[${i}].estudio=this.value;saveDraft()" style="min-width:100px"></td>
+    <td><input class="ti" type="text" value="${m.codigo || ''}" placeholder="Código" oninput="maquila[${i}].codigo=this.value;saveDraft()" style="min-width:80px"></td>
+    <td><input class="ti" type="text" value="${m.lab}" placeholder="Laboratorio" oninput="maquila[${i}].lab=this.value;saveDraft()" style="min-width:100px"></td>
     <td><div class="tgl-grp">
       <button class="tgl yes${m.resultado === true ? ' active' : ''}" onclick="maquila[${i}].resultado=true;renderMaquila()">Sí</button>
       <button class="tgl no${m.resultado === false ? ' active' : ''}" onclick="maquila[${i}].resultado=false;renderMaquila()">No</button>
@@ -288,13 +424,15 @@ function renderMaquila() {
     <td><button class="xbtn" onclick="maquila.splice(${i},1);renderMaquila()">×</button></td>
   </tr>`).join('');
   el.innerHTML = `<div class="tbl-wrap"><table>
-    <thead><tr><th>Paciente</th><th>Folio</th><th>Estudio</th><th>Laboratorio</th><th>Resultado recibido</th><th>Capturado EasyLIS</th><th>Validado y entregado</th><th></th></tr></thead>
+    <thead><tr><th>Paciente</th><th>ID</th><th>Estudios</th><th>Código estudios</th><th>Laboratorio</th><th>Resultado recibido</th><th>Capturado en easyLIS</th><th>Entregado</th><th></th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
+  saveDraft();
 }
 
 function addMaquila() {
-  maquila.push({ pac: '', folio: '', estudio: '', lab: '', resultado: null, capturado: null, entregado: null });
+  maquila.push({ pac: '', folio: '', estudio: '', codigo: '', lab: '', resultado: null, capturado: null, entregado: null });
   renderMaquila();
+  saveDraft();
 }
 
 // ==================== CULTIVOS ====================
@@ -304,25 +442,27 @@ function renderCultivos() {
   const estadoPill = { pendiente: 'p-pend', preliminar: 'p-prel', final: 'p-final' };
   const estadoLabel = { pendiente: 'Pendiente', preliminar: 'Preliminar', final: 'Final' };
   const rows = cultivos.map((c, i) => `<tr>
-    <td><input class="ti" type="text" value="${c.pac}" placeholder="Paciente" oninput="cultivos[${i}].pac=this.value" style="min-width:90px"></td>
-    <td><input class="ti" type="text" value="${c.tipo}" placeholder="Tipo de cultivo" oninput="cultivos[${i}].tipo=this.value" style="min-width:110px"></td>
+    <td><input class="ti" type="text" value="${c.pac}" placeholder="Paciente" oninput="cultivos[${i}].pac=this.value;saveDraft()" style="min-width:90px"></td>
+    <td><input class="ti" type="text" value="${c.tipo}" placeholder="Tipo de cultivo" oninput="cultivos[${i}].tipo=this.value;saveDraft()" style="min-width:110px"></td>
     <td><select class="stat-sel" onchange="cultivos[${i}].estado=this.value;renderCultivos()">
       <option value="pendiente"${c.estado === 'pendiente' ? ' selected' : ''}>Pendiente</option>
       <option value="preliminar"${c.estado === 'preliminar' ? ' selected' : ''}>Preliminar entregado</option>
       <option value="final"${c.estado === 'final' ? ' selected' : ''}>Final entregado</option>
     </select></td>
     <td><span class="pill ${estadoPill[c.estado]}">${estadoLabel[c.estado]}</span></td>
-    <td><input class="ti" type="text" value="${c.obs}" placeholder="Seguimiento / notas..." oninput="cultivos[${i}].obs=this.value" style="min-width:130px"></td>
+    <td><input class="ti" type="text" value="${c.obs}" placeholder="Seguimiento / notas..." oninput="cultivos[${i}].obs=this.value;saveDraft()" style="min-width:130px"></td>
     <td><button class="xbtn" onclick="cultivos.splice(${i},1);renderCultivos()">×</button></td>
   </tr>`).join('');
   el.innerHTML = `<div class="tbl-wrap"><table>
     <thead><tr><th>Paciente</th><th>Tipo de cultivo</th><th>Estado</th><th></th><th>Seguimiento</th><th></th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
+  saveDraft();
 }
 
 function addCultivo() {
   cultivos.push({ pac: '', tipo: '', estado: 'pendiente', obs: '' });
   renderCultivos();
+  saveDraft();
 }
 
 // ==================== PLACAS ====================
@@ -330,15 +470,16 @@ function renderPlacas() {
   const el = document.getElementById('placas-content');
   if (!placas.length) { el.innerHTML = '<div class="empty">sin placas registradas</div>'; return; }
   const rows = placas.map((p, i) => `<tr>
-    <td><input class="ti" type="text" value="${p.id}" placeholder="ID / muestra" oninput="placas[${i}].id=this.value" style="min-width:80px"></td>
-    <td><input class="ti" type="text" value="${p.tipo}" placeholder="Tipo" oninput="placas[${i}].tipo=this.value" style="min-width:90px"></td>
-    <td><input class="ti" type="datetime-local" value="${p.sembrado}" oninput="placas[${i}].sembrado=this.value"></td>
-    <td><input class="ti" type="text" value="${p.seg}" placeholder="Seguimiento..." oninput="placas[${i}].seg=this.value" style="min-width:130px"></td>
+    <td><input class="ti" type="text" value="${p.id}" placeholder="ID / muestra" oninput="placas[${i}].id=this.value;saveDraft()" style="min-width:80px"></td>
+    <td><input class="ti" type="text" value="${p.tipo}" placeholder="Tipo" oninput="placas[${i}].tipo=this.value;saveDraft()" style="min-width:90px"></td>
+    <td><input class="ti" type="datetime-local" value="${p.sembrado}" oninput="placas[${i}].sembrado=this.value;saveDraft()"></td>
+    <td><input class="ti" type="text" value="${p.seg}" placeholder="Seguimiento..." oninput="placas[${i}].seg=this.value;saveDraft()" style="min-width:130px"></td>
     <td><button class="xbtn" onclick="placas.splice(${i},1);renderPlacas()">×</button></td>
   </tr>`).join('');
   el.innerHTML = `<div class="tbl-wrap"><table>
     <thead><tr><th>ID / Muestra</th><th>Tipo de placa</th><th>Fecha y hora de siembra</th><th>Seguimiento</th><th></th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
+  saveDraft();
 }
 
 function addPlaca() {
@@ -346,6 +487,7 @@ function addPlaca() {
   const loc = new Date(now - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   placas.push({ id: '', tipo: '', sembrado: loc, seg: '' });
   renderPlacas();
+  saveDraft();
 }
 
 // ==================== TAREAS ====================
@@ -359,6 +501,7 @@ function renderTasks(key) {
     ${key === 'pend' ? `<span class="pbadge b${t.prio[0]}">${t.prio}</span>` : ''}
     <button class="xbtn" onclick="tasks['${key}'].splice(${i},1);renderTasks('${key}')">×</button>
   </div>`).join('');
+  saveDraft();
 }
 
 function addTask(key) {
@@ -370,6 +513,7 @@ function addTask(key) {
   tasks[key].push(o);
   i.value = '';
   renderTasks(key);
+  saveDraft();
 }
 
 // ==================== RESUMEN ====================
@@ -874,13 +1018,14 @@ function generatePDFMaquila() {
   
   let html = `<div class="pdf-section">
     <div class="pdf-section-title">Maquila</div>
-    <table class="pdf-table"><thead><tr><th>Paciente</th><th>Folio</th><th>Estudio</th><th>Laboratorio</th><th>Resultado</th><th>Capturado</th><th>Entregado</th></tr></thead><tbody>`;
+    <table class="pdf-table"><thead><tr><th>Paciente</th><th>Folio</th><th>Estudio</th><th>Código estudio</th><th>Laboratorio</th><th>Resultado</th><th>Capturado</th><th>Entregado</th></tr></thead><tbody>`;
   
   maquila.forEach(m => {
     html += `<tr>
       <td>${m.pac || '—'}</td>
       <td>${m.folio || '—'}</td>
       <td>${m.estudio || '—'}</td>
+      <td>${m.codigo || '—'}</td>
       <td>${m.lab || '—'}</td>
       <td>${m.resultado === true ? '<span class="status-ok">✓</span>' : m.resultado === false ? '<span class="status-error">✗</span>' : '—'}</td>
       <td>${m.capturado === true ? '<span class="status-ok">✓</span>' : m.capturado === false ? '<span class="status-error">✗</span>' : '—'}</td>

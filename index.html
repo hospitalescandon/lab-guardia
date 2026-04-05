@@ -168,12 +168,12 @@
             <div class="empty">sin incidencias registradas</div>
           </div>
           <div id="fr-react" class="add-form">
-            <input
-              type="text"
+            <textarea
               id="in-react"
+              rows="2"
               placeholder="Nombre del reactivo / equipo..."
-              onkeydown="if (event.key === 'Enter') addReact();"
-            />
+              style="resize:vertical; min-height: 36px;"
+            ></textarea>
             <button onclick="addReact()">Agregar</button>
           </div>
         </div>
@@ -229,12 +229,12 @@
           </div>
           <div id="list-real"><div class="empty">sin tareas</div></div>
           <div id="fr-real" class="add-form">
-            <input
-              type="text"
+            <textarea
               id="in-real"
+              rows="2"
               placeholder="Tarea realizada..."
-              onkeydown="if (event.key === 'Enter') addTask('real');"
-            />
+              style="resize:vertical; min-height: 36px;"
+            ></textarea>
             <button onclick="addTask('real')">Agregar</button>
           </div>
         </div>
@@ -251,12 +251,12 @@
           </div>
           <div id="list-pend"><div class="empty">sin pendientes</div></div>
           <div id="fr-pend" class="add-form">
-            <input
-              type="text"
+            <textarea
               id="in-pend"
+              rows="2"
               placeholder="Tarea pendiente..."
-              onkeydown="if (event.key === 'Enter') addTask('pend');"
-            />
+              style="resize:vertical; min-height: 36px;"
+            ></textarea>
             <select id="prio" style="width: auto; flex: 0">
               <option value="alta">Alta</option>
               <option value="media" selected>Media</option>
@@ -278,12 +278,12 @@
           </div>
           <div id="list-inc"><div class="empty">sin incidencias</div></div>
           <div id="fr-inc" class="add-form">
-            <input
-              type="text"
+            <textarea
               id="in-inc"
+              rows="2"
               placeholder="Incidencia o problema..."
-              onkeydown="if (event.key === 'Enter') addTask('inc');"
-            />
+              style="resize:vertical; min-height: 36px;"
+            ></textarea>
             <button onclick="addTask('inc')">Agregar</button>
           </div>
         </div>
@@ -314,18 +314,12 @@
           </button>
           <button
             class="btn-default"
-            onclick="window.print()"
-            style="display: none"
-          >
-            Imprimir
-          </button>
-          <button
-            class="btn-default"
             onclick="exportPDF()"
             style="margin-left: 8px"
           >
             Imprimir / Exportar PDF
           </button>
+          <button class="btn-danger" onclick="clearAllData()" style="margin-left: auto">Borrar todos los datos</button>
         </div>
 
         <!-- RESUMEN BANNER -->
