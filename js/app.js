@@ -52,7 +52,7 @@ const cartuchos = {
   istat: 0,
   epoc: 0,
   filmarray: { Respiratorio: 0, Gastrointestinal: 0, 'Neumonía': 0, Hemocultivos: 0, 'Inf. rodilla': 0, Meningitis: 0 },
-  ramp: { Troponina: 0, Mioglobina: 0, 'Dímero D': 0, 'NT-pro BNP': 0 }
+  ramp: { Troponina: 0, Mioglobina: 0, 'Dímero D': 0, 'NT-pro BNP': 0, 'Procalcitonina': 0 }
 };
 
 let reactivos = [];
@@ -644,8 +644,95 @@ async function guardarEntrega() {
   const key = 'guardia_' + fecha + '_' + turno.toLowerCase();
   try {
     localStorage.setItem(key, JSON.stringify(snap));
-    showToast('✔ Entrega guardada correctamente');
+    downloadHTML(snap);
+    showToast('✔ Entrega guardada y descargada correctamente');
   } catch (e) { showToast('Error al guardar', true); }
+}
+
+function downloadHTML(data) {
+  const tLabel = { Manana: 'Mañana', Tarde: 'Tarde', Noche: 'Noche' }[data.turno] || data.turno;
+  
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Entrega de Guardia - ${data.fecha}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #fafafa; }
+    h1 { color: #29252b; font-size: 20px; border-bottom: 2px solid #6399f6; padding-bottom: 10px; }
+    h2 { color: #565b67; font-size: 14px; font-weight: normal; margin-top: 5px; }
+    .meta { display: flex; gap: 20px; margin: 20px 0; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .meta div { flex: 1; }
+    .label { font-size: 11px; color: #565b67; text-transform: uppercase; }
+    .value { font-size: 14px; font-weight: 600; color: #29252b; }
+    .section { margin: 20px 0; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .section h3 { color: #6399f6; font-size: 13px; margin: 0 0 10px; text-transform: uppercase; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 5px; }
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .pill-ok { background: #d3f1e2; color: #03b444; }
+    .pill-warn { background: #f7ecd2; color: #ef9402; }
+    .pill-error { background: #f9dada; color: #d50303; }
+    .empty { color: #888; font-style: italic; }
+    .footer { text-align: center; margin-top: 30px; color: #888; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Hospital Escandón — Laboratorio</h1>
+  <h2>Entrega de Guardia | Turno ${tLabel} | ${data.fecha}</h2>
+  
+  <div class="meta">
+    <div><div class="label">Guardia saliente</div><div class="value">${data.sale}</div></div>
+    <div><div class="label">Guardia entrante</div><div class="value">${data.entra}</div></div>
+    <div><div class="label">Fecha</div><div class="value">${data.fecha}</div></div>
+  </div>
+  
+  <div class="section">
+    <h3>Estado de Equipos</h3>
+    ${(data.equipos || []).filter(e => e.status !== 'op').length ? (data.equipos || []).filter(e => e.status !== 'op').map(e => `<span class="pill ${e.status === 'fa' ? 'pill-error' : 'pill-warn'}">${e.n}: ${e.status === 'fa' ? 'Falla' : e.status === 'ma' ? 'Mantenimiento' : 'Apagado'}</span>`).join(' ') : '<span class="empty">Todos operativos</span>'}
+  </div>
+  
+  <div class="section">
+    <h3>Controles y Calibradores</h3>
+    ${(data.areas || []).filter(a => a.ctrl === false || a.calib === false).length ? (data.areas || []).filter(a => a.ctrl === false || a.calib === false).map(a => `<span class="pill pill-error">${a.n}</span>`).join(' ') : '<span class="pill pill-ok">Todos al día</span>'}
+  </div>
+  
+  <div class="section">
+    <h3>Pruebas Rápidas</h3>
+    ${(data.pruebasRapidas || []).filter(p => p.usado > 0).length ? (data.pruebasRapidas || []).filter(p => p.usado > 0).map(p => `<span class="pill pill-ok">${p.n} ×${p.usado}</span>`).join(' ') : '<span class="empty">Sin pruebas usadas</span>'}
+  </div>
+  
+  <div class="section">
+    <h3>Cartuchos</h3>
+    ${Object.entries(data.cartuchos || {}).filter(([,v]) => typeof v === 'number' ? v > 0 : Object.values(v || {}).some(x => x > 0)).length ? Object.entries(data.cartuchos || {}).flatMap(([k, v]) => typeof v === 'number' && v > 0 ? [`${k} ×${v}`] : Object.entries(v || {}).filter(([,x]) => x > 0).map(([x, y]) => `${k} - ${x} ×${y}`)).join(', ') : '<span class="empty">Sin cartuchos registrados</span>'}
+  </div>
+  
+  ${(data.tasks?.pend || []).length ? `
+  <div class="section">
+    <h3>Pendientes</h3>
+    ${(data.tasks.pend || []).map(t => `<span class="pill pill-${t.prio === 'alta' ? 'error' : 'warn'}">[${t.prio}] ${t.text}</span>`).join(' ')}
+  </div>` : ''}
+  
+  ${data.obs ? `
+  <div class="section">
+    <h3>Observaciones</h3>
+    <p>${data.obs}</p>
+  </div>` : ''}
+  
+  <div class="footer">
+    Generado el ${new Date().toLocaleString('es-MX')} | Laboratorio HE
+  </div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `guardia_${data.fecha}_${data.turno}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ==================== HISTORIAL ====================
