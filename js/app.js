@@ -26,6 +26,7 @@ const equipos = [
   { n: 'BactAlert', cat: 'Microbiología', status: 'op' },
   { n: 'Film Array', cat: 'Microbiología', status: 'op' },
   { n: 'RAMP', cat: 'Pruebas rápidas', status: 'op' },
+  { n: 'Clover', cat: 'Hematología', status: 'op' },
   { n: 'iStat', cat: 'Q.C. / POC', status: 'op' },
   { n: 'Epoc', cat: 'Q.C. / POC', status: 'op' }
 ];
@@ -51,8 +52,9 @@ const pruebasRapidas = [
 const cartuchos = {
   istat: 0,
   epoc: 0,
-  filmarray: { Respiratorio: 0, Gastrointestinal: 0, 'Neumonía': 0, Hemocultivos: 0, 'Inf. rodilla': 0, Meningitis: 0 },
-  ramp: { Troponina: 0, Mioglobina: 0, 'Dímero D': 0, 'NT-pro BNP': 0, 'Procalcitonina': 0 }
+  filmarray: { Respiratorio: 0, GI: 0, 'Neumonía': 0, Hemocultivos: 0, 'Inf. rodilla': 0, Meningitis: 0 },
+  ramp: { Troponina: 0, Mioglobina: 0, 'Dímero D': 0, 'NT-pro BNP': 0, 'Procalcitonina': 0 },
+  clover: { HbA1c: 0, 'Cartucho diario': 0, 'Cartucho mensual': 0 }
 };
 
 let reactivos = [];
@@ -167,6 +169,7 @@ function clearAllData() {
   cartuchos.epoc = 0;
   Object.keys(cartuchos.filmarray).forEach(k => cartuchos.filmarray[k] = 0);
   Object.keys(cartuchos.ramp).forEach(k => cartuchos.ramp[k] = 0);
+  Object.keys(cartuchos.clover).forEach(k => cartuchos.clover[k] = 0);
   
   // Limpiar arrays
   reactivos = [];
@@ -367,6 +370,10 @@ function renderCartuchos() {
   h += `</div><div class="crt-section-title">RAMP — pruebas</div><div class="crt-grid">`;
   Object.keys(c.ramp).forEach(k => {
     h += crtRow(k, c.ramp[k], `cartuchos.ramp['${k}']=Math.max(0,cartuchos.ramp['${k}']-1);renderCartuchos()`, `cartuchos.ramp['${k}']++;renderCartuchos()`);
+  });
+  h += `</div><div class="crt-section-title">Clover - pruebas</div><div class="crt-grid">`;
+  Object.keys(c.clover).forEach(k => {
+    h += crtRow(k, c.clover[k], `cartuchos.clover['${k}']=Math.max(0,cartuchos.clover['${k}']-1);renderCartuchos()`, `cartuchos.clover['${k}']++;renderCartuchos()`);
   });
   h += `</div>`;
   document.getElementById('crt-content').innerHTML = h;
