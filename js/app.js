@@ -65,6 +65,11 @@ const tasks = { real: [], pend: [], inc: [] };
 
 // ==================== INICIALIZACIÓN ====================
 document.addEventListener('DOMContentLoaded', () => {
+  // Inicializar sistema de temas dinámicos
+  if (window.ThemeSystem) {
+    window.ThemeSystem.initThemeSystem();
+  }
+  
   document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
   loadDraft(); // Cargar borrador guardado
   setupAutoSave(); // Configurar guardado automático
@@ -652,90 +657,271 @@ async function guardarEntrega() {
   try {
     localStorage.setItem(key, JSON.stringify(snap));
     downloadHTML(snap);
-    showToast('✔ Entrega guardada y descargada correctamente');
+    showToast('✔ Entrega guardada y descargada');
   } catch (e) { showToast('Error al guardar', true); }
 }
 
 function downloadHTML(data) {
-  const tLabel = { Manana: 'Mañana', Tarde: 'Tarde', Noche: 'Noche' }[data.turno] || data.turno;
-  
+  // ---- Nombre del archivo: FechaISO_TCode_HH:MMh.html ----
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const turnoCode = { Manana: 'TM', Tarde: 'TV', Noche: 'TN' }[data.turno] || 'TX';
+  const filename = `${data.fecha}_${turnoCode}_${hh}-${mm}h.html`;
+
+  const tLabel = { Manana: 'Matutino', Tarde: 'Vespertino', Noche: 'Nocturno' }[data.turno] || data.turno;
+  const turnoAccent = { Manana: '#4f8ef7', Tarde: '#b47003', Noche: '#3602d4' }[data.turno] || '#6750a4';
+  const obs = data.obs || '';
+
+  // ---- Helpers internos (trabajan con el estado global actual) ----
+  function secEquipos() {
+    const noOp = (data.equipos || []).filter(e => e.status !== 'op');
+    if (!noOp.length) return '<p class="ok-line">✓ Todos los equipos operativos</p>';
+    const statusText = { fa: 'Con falla', ma: 'Mantenimiento', ap: 'Apagado' };
+    const pillCls = { fa: 'pill-error', ma: 'pill-warn', ap: 'pill-neutral' };
+    return `<table class="rt"><thead><tr><th>Equipo</th><th>Área</th><th>Estado</th></tr></thead><tbody>
+      ${noOp.map(e => `<tr><td>${e.n}</td><td>${e.cat}</td><td><span class="pill ${pillCls[e.status]}">${statusText[e.status]}</span></td></tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  function secControles() {
+    const sinCtrl = (data.areas || []).filter(a => a.ctrl === false);
+    const sinCalib = (data.areas || []).filter(a => a.calib === false);
+    if (!sinCtrl.length && !sinCalib.length) return '<p class="ok-line">✓ Todas las áreas al día</p>';
+    return `<table class="rt"><thead><tr><th>Área / Equipo</th><th>Control</th><th>Calibrador</th><th>Observación</th></tr></thead><tbody>
+      ${(data.areas || []).map(a => `<tr>
+        <td>${a.n}</td>
+        <td>${a.ctrl === true ? '<span class="ok-txt">✓ Sí</span>' : a.ctrl === false ? '<span class="err-txt">✗ No</span>' : '<span class="muted-txt">—</span>'}</td>
+        <td>${a.calib === true ? '<span class="ok-txt">✓ Sí</span>' : a.calib === false ? '<span class="err-txt">✗ No</span>' : '<span class="muted-txt">—</span>'}</td>
+        <td>${a.obs || '<span class="muted-txt">—</span>'}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  function secPruebasRapidas() {
+    const usadas = (data.pruebasRapidas || []).filter(p => p.usado > 0 || p.fallo || p.falto || p.acabo);
+    if (!usadas.length) return '';
+    return `<table class="rt"><thead><tr><th>Prueba</th><th>Cantidad</th><th>Observaciones</th></tr></thead><tbody>
+      ${usadas.map(p => {
+        const obs = [p.fallo && 'falló', p.falto && 'faltó', p.acabo && 'se acabó'].filter(Boolean);
+        return `<tr><td>${p.n}</td><td>${p.usado}</td><td>${obs.length ? `<span class="warn-txt">${obs.join(', ')}</span>` : '<span class="muted-txt">—</span>'}</td></tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+
+  function secCartuchos() {
+    const rows = [];
+    const c = data.cartuchos || {};
+    if (c.istat) rows.push(['iStat', c.istat]);
+    if (c.epoc) rows.push(['Epoc', c.epoc]);
+    Object.entries(c.filmarray || {}).filter(([,v]) => v > 0).forEach(([k,v]) => rows.push([`Film Array — ${k}`, v]));
+    Object.entries(c.ramp || {}).filter(([,v]) => v > 0).forEach(([k,v]) => rows.push([`RAMP — ${k}`, v]));
+    Object.entries(c.clover || {}).filter(([,v]) => v > 0).forEach(([k,v]) => rows.push([`Clover — ${k}`, v]));
+    if (!rows.length) return '';
+    return `<table class="rt"><thead><tr><th>Tipo / Panel</th><th>Cantidad</th></tr></thead><tbody>
+      ${rows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  function secReactivos() {
+    const probs = (data.reactivos || []).filter(r => r.falto || r.fallo || r.acabo);
+    if (!probs.length) return '';
+    return `<table class="rt"><thead><tr><th>Reactivo / Equipo</th><th>Incidencia</th></tr></thead><tbody>
+      ${probs.map(r => {
+        const inc = [r.falto && 'faltó', r.fallo && 'falló', r.acabo && 'se acabó'].filter(Boolean);
+        return `<tr><td>${r.n}</td><td><span class="warn-txt">${inc.join(', ')}</span></td></tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+
+  function secMaquila() {
+    if (!(data.maquila || []).length) return '';
+    return `<table class="rt"><thead><tr><th>Paciente</th><th>Folio</th><th>Estudio</th><th>Código</th><th>Laboratorio</th><th>Resultado</th><th>Capturado</th><th>Entregado</th></tr></thead><tbody>
+      ${data.maquila.map(m => `<tr>
+        <td>${m.pac || '—'}</td><td>${m.folio || '—'}</td><td>${m.estudio || '—'}</td><td>${m.codigo || '—'}</td><td>${m.lab || '—'}</td>
+        <td>${m.resultado === true ? '<span class="ok-txt">✓</span>' : m.resultado === false ? '<span class="err-txt">✗</span>' : '—'}</td>
+        <td>${m.capturado === true ? '<span class="ok-txt">✓</span>' : m.capturado === false ? '<span class="err-txt">✗</span>' : '—'}</td>
+        <td>${m.entregado === true ? '<span class="ok-txt">✓</span>' : m.entregado === false ? '<span class="err-txt">✗</span>' : '—'}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  function secCultivos() {
+    let html = '';
+    if ((data.cultivos || []).length) {
+      const stMap = { pendiente: ['pill-warn','Pendiente'], preliminar: ['pill-neutral','Preliminar'], final: ['pill-ok','Final'] };
+      html += `<p class="sub-label">Cultivos</p>
+      <table class="rt"><thead><tr><th>Paciente</th><th>Tipo</th><th>Estado</th><th>Seguimiento</th></tr></thead><tbody>
+        ${data.cultivos.map(c => {
+          const [cls, lbl] = stMap[c.estado] || ['pill-neutral', c.estado];
+          return `<tr><td>${c.pac||'—'}</td><td>${c.tipo||'—'}</td><td><span class="pill ${cls}">${lbl}</span></td><td>${c.obs||'—'}</td></tr>`;
+        }).join('')}
+      </tbody></table>`;
+    }
+    if ((data.placas || []).length) {
+      html += `<p class="sub-label" style="margin-top:12px">Placas sembradas</p>
+      <table class="rt"><thead><tr><th>ID / Muestra</th><th>Tipo</th><th>Fecha siembra</th><th>Seguimiento</th></tr></thead><tbody>
+        ${data.placas.map(p => `<tr><td>${p.id||'—'}</td><td>${p.tipo||'—'}</td><td>${p.sembrado||'—'}</td><td>${p.seg||'—'}</td></tr>`).join('')}
+      </tbody></table>`;
+    }
+    return html;
+  }
+
+  function secTareas() {
+    let html = '';
+    if ((data.tasks?.real || []).length) {
+      html += `<p class="sub-label">Tareas realizadas</p><ul class="task-list">
+        ${data.tasks.real.map(t => `<li>${t.text}</li>`).join('')}</ul>`;
+    }
+    if ((data.tasks?.pend || []).length) {
+      html += `<p class="sub-label">Tareas pendientes</p><ul class="task-list">
+        ${data.tasks.pend.map(t => {
+          const pc = t.prio === 'alta' ? 'err-txt' : t.prio === 'media' ? 'warn-txt' : 'muted-txt';
+          return `<li><span class="${pc} prio-badge">${t.prio}</span> ${t.text}</li>`;
+        }).join('')}</ul>`;
+    }
+    if ((data.tasks?.inc || []).length) {
+      html += `<p class="sub-label">Incidencias / problemas</p><ul class="task-list inc-list">
+        ${data.tasks.inc.map(t => `<li class="err-txt">${t.text}</li>`).join('')}</ul>`;
+    }
+    return html;
+  }
+
+  // ---- Secciones opcionales (sólo se incluyen si tienen contenido) ----
+  const sPR = secPruebasRapidas();
+  const sCrt = secCartuchos();
+  const sReact = secReactivos();
+  const sMaq = secMaquila();
+  const sMicro = secCultivos();
+  const sTareas = secTareas();
+
   const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Entrega de Guardia - ${data.fecha}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardia ${tLabel} — ${data.fecha} — Laboratorio HE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #fafafa; }
-    h1 { color: #29252b; font-size: 20px; border-bottom: 2px solid #6399f6; padding-bottom: 10px; }
-    h2 { color: #565b67; font-size: 14px; font-weight: normal; margin-top: 5px; }
-    .meta { display: flex; gap: 20px; margin: 20px 0; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .meta div { flex: 1; }
-    .label { font-size: 11px; color: #565b67; text-transform: uppercase; }
-    .value { font-size: 14px; font-weight: 600; color: #29252b; }
-    .section { margin: 20px 0; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .section h3 { color: #6399f6; font-size: 13px; margin: 0 0 10px; text-transform: uppercase; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 5px; }
-    .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-    .pill-ok { background: #d3f1e2; color: #03b444; }
-    .pill-warn { background: #f7ecd2; color: #ef9402; }
-    .pill-error { background: #f9dada; color: #d50303; }
-    .empty { color: #888; font-style: italic; }
-    .footer { text-align: center; margin-top: 30px; color: #888; font-size: 12px; }
+    :root{--accent:${turnoAccent};--ok:#02772d;--ok-dim:#d3f1e2;--warn:#b47003;--warn-dim:#f7ecd2;--err:#a20202;--err-dim:#f9dada;--neutral:#e5eef8;--neutral-txt:#29252b}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Syne',sans-serif;background:#f3edf7;color:#29252b;min-height:100vh;padding:0 0 3rem}
+    a{color:var(--accent)}
+
+    /* Page header */
+    .page-hdr{background:var(--accent);color:#fff;padding:2rem 2.5rem 1.75rem;margin-bottom:2rem}
+    .page-hdr h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+    .page-hdr .sub{font-family:'DM Mono',monospace;font-size:13px;opacity:.85}
+
+    /* Meta strip */
+    .meta-strip{display:flex;gap:0;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);margin:0 2rem 1.5rem;flex-wrap:wrap}
+    .meta-item{flex:1;min-width:150px;padding:1rem 1.5rem;border-right:1px solid #eee}
+    .meta-item:last-child{border-right:none}
+    .meta-lbl{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#6750a4;margin-bottom:4px}
+    .meta-val{font-size:15px;font-weight:700;color:#29252b}
+
+    /* Sections */
+    .wrap{max-width:960px;margin:0 auto;padding:0 2rem}
+    .section{background:#fff;border-radius:24px;padding:1.5rem;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+    .section-title{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:2px solid var(--accent);display:flex;align-items:center;gap:8px}
+    .section-title::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+    .sub-label{font-family:'DM Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#6750a4;margin-bottom:.5rem;margin-top:.25rem}
+
+    /* Tables */
+    .rt{width:100%;border-collapse:collapse;font-size:13px;font-family:'DM Mono',monospace}
+    .rt thead th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6750a4;padding:0 10px 8px 0;text-align:left;border-bottom:1px solid #e8def8;white-space:nowrap}
+    .rt tbody td{padding:7px 10px 7px 0;border-top:1px solid #f0ebf8;color:#29252b;vertical-align:middle}
+    .rt tbody tr:first-child td{border-top:none}
+
+    /* Pills */
+    .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;font-family:'DM Mono',monospace}
+    .pill-ok{background:var(--ok-dim);color:var(--ok)}
+    .pill-warn{background:var(--warn-dim);color:var(--warn)}
+    .pill-error{background:var(--err-dim);color:var(--err)}
+    .pill-neutral{background:var(--neutral);color:var(--neutral-txt)}
+
+    /* Text helpers */
+    .ok-txt{color:var(--ok);font-weight:600}
+    .err-txt{color:var(--err);font-weight:600}
+    .warn-txt{color:var(--warn);font-weight:600}
+    .muted-txt{color:#888}
+    .ok-line{color:var(--ok);font-weight:600;font-family:'DM Mono',monospace;font-size:13px}
+
+    /* Task lists */
+    .task-list{list-style:none;padding:0;font-family:'DM Mono',monospace;font-size:13px;line-height:2}
+    .task-list li{padding:2px 0;border-bottom:1px solid #f0ebf8;color:#29252b}
+    .task-list li:last-child{border-bottom:none}
+    .prio-badge{font-size:10px;padding:2px 7px;border-radius:99px;background:rgba(0,0,0,.06);margin-right:6px}
+    .inc-list li{color:var(--err)}
+
+    /* Observaciones */
+    .obs-text{font-family:'DM Mono',monospace;font-size:13px;line-height:1.8;color:#29252b;background:#f3edf7;border-radius:12px;padding:1rem}
+
+    /* Footer */
+    .doc-footer{text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#888;margin-top:2rem;padding-top:1rem;border-top:1px solid #e8def8}
+
+    @media print{
+      body{background:#fff;padding:0}
+      .page-hdr{color:#29252b;background:#f3edf7;border-bottom:2px solid var(--accent)}
+      .meta-strip,.section{box-shadow:none;border:1px solid #eee}
+      .section{page-break-inside:avoid}
+    }
+    @media(max-width:600px){
+      .page-hdr{padding:1.5rem}
+      .wrap{padding:0 1rem}
+      .meta-strip{margin:0 1rem 1.25rem}
+      .meta-item{min-width:120px;padding:.75rem 1rem}
+    }
   </style>
 </head>
 <body>
-  <h1>Hospital Escandón — Laboratorio</h1>
-  <h2>Entrega de Guardia | Turno ${tLabel} | ${data.fecha}</h2>
-  
-  <div class="meta">
-    <div><div class="label">Guardia saliente</div><div class="value">${data.sale}</div></div>
-    <div><div class="label">Guardia entrante</div><div class="value">${data.entra}</div></div>
-    <div><div class="label">Fecha</div><div class="value">${data.fecha}</div></div>
+
+  <div class="page-hdr">
+    <h1>Hospital Escandón — Laboratorio</h1>
+    <div class="sub">Entrega de guardia &nbsp;·&nbsp; Turno ${tLabel} &nbsp;·&nbsp; ${data.fecha}</div>
   </div>
-  
-  <div class="section">
-    <h3>Estado de Equipos</h3>
-    ${(data.equipos || []).filter(e => e.status !== 'op').length ? (data.equipos || []).filter(e => e.status !== 'op').map(e => `<span class="pill ${e.status === 'fa' ? 'pill-error' : 'pill-warn'}">${e.n}: ${e.status === 'fa' ? 'Falla' : e.status === 'ma' ? 'Mantenimiento' : 'Apagado'}</span>`).join(' ') : '<span class="empty">Todos operativos</span>'}
+
+  <div class="wrap">
+    <div class="meta-strip">
+      <div class="meta-item"><div class="meta-lbl">Guardia saliente</div><div class="meta-val">${data.sale || '—'}</div></div>
+      <div class="meta-item"><div class="meta-lbl">Guardia entrante</div><div class="meta-val">${data.entra || '—'}</div></div>
+      <div class="meta-item"><div class="meta-lbl">Fecha</div><div class="meta-val">${data.fecha}</div></div>
+      <div class="meta-item"><div class="meta-lbl">Turno</div><div class="meta-val">${tLabel}</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Estado de equipos</div>
+      ${secEquipos()}
+    </div>
+
+    <div class="section">
+      <div class="section-title">Controles y calibradores</div>
+      ${secControles()}
+    </div>
+
+    ${sPR ? `<div class="section"><div class="section-title">Pruebas rápidas</div>${sPR}</div>` : ''}
+    ${sCrt ? `<div class="section"><div class="section-title">Cartuchos utilizados</div>${sCrt}</div>` : ''}
+    ${sReact ? `<div class="section"><div class="section-title">Reactivos — incidencias</div>${sReact}</div>` : ''}
+    ${sMaq ? `<div class="section"><div class="section-title">Maquila</div>${sMaq}</div>` : ''}
+    ${sMicro ? `<div class="section"><div class="section-title">Microbiología</div>${sMicro}</div>` : ''}
+    ${sTareas ? `<div class="section"><div class="section-title">Tareas / pendientes / incidencias</div>${sTareas}</div>` : ''}
+
+    ${obs ? `<div class="section"><div class="section-title">Observaciones generales</div><div class="obs-text">${obs}</div></div>` : ''}
+
+    <div class="doc-footer">
+      Documento generado el ${now.toLocaleString('es-MX')} &nbsp;·&nbsp; Laboratorio HE &nbsp;·&nbsp; ${filename}
+    </div>
   </div>
-  
-  <div class="section">
-    <h3>Controles y Calibradores</h3>
-    ${(data.areas || []).filter(a => a.ctrl === false || a.calib === false).length ? (data.areas || []).filter(a => a.ctrl === false || a.calib === false).map(a => `<span class="pill pill-error">${a.n}</span>`).join(' ') : '<span class="pill pill-ok">Todos al día</span>'}
-  </div>
-  
-  <div class="section">
-    <h3>Pruebas Rápidas</h3>
-    ${(data.pruebasRapidas || []).filter(p => p.usado > 0).length ? (data.pruebasRapidas || []).filter(p => p.usado > 0).map(p => `<span class="pill pill-ok">${p.n} ×${p.usado}</span>`).join(' ') : '<span class="empty">Sin pruebas usadas</span>'}
-  </div>
-  
-  <div class="section">
-    <h3>Cartuchos</h3>
-    ${Object.entries(data.cartuchos || {}).filter(([,v]) => typeof v === 'number' ? v > 0 : Object.values(v || {}).some(x => x > 0)).length ? Object.entries(data.cartuchos || {}).flatMap(([k, v]) => typeof v === 'number' && v > 0 ? [`${k} ×${v}`] : Object.entries(v || {}).filter(([,x]) => x > 0).map(([x, y]) => `${k} - ${x} ×${y}`)).join(', ') : '<span class="empty">Sin cartuchos registrados</span>'}
-  </div>
-  
-  ${(data.tasks?.pend || []).length ? `
-  <div class="section">
-    <h3>Pendientes</h3>
-    ${(data.tasks.pend || []).map(t => `<span class="pill pill-${t.prio === 'alta' ? 'error' : 'warn'}">[${t.prio}] ${t.text}</span>`).join(' ')}
-  </div>` : ''}
-  
-  ${data.obs ? `
-  <div class="section">
-    <h3>Observaciones</h3>
-    <p>${data.obs}</p>
-  </div>` : ''}
-  
-  <div class="footer">
-    Generado el ${new Date().toLocaleString('es-MX')} | Laboratorio HE
-  </div>
+
 </body>
 </html>`;
 
-  const blob = new Blob([html], { type: 'text/html' });
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `guardia_${data.fecha}_${data.turno}.html`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

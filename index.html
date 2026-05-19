@@ -11,6 +11,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/styles.css" />
+    <script src="js/themes.js"></script>
   </head>
   <body>
     <div class="shell">
@@ -34,6 +35,7 @@
             Historial
           </button>
         </nav>
+        <div class="theme-badge" id="theme-badge" title="Tema del día"></div>
       </header>
 
       <!-- FORM VIEW -->
@@ -309,17 +311,8 @@
           <button class="btn-default" onclick="guardarEntrega()">
             Guardar entrega
           </button>
-          <!--
-          <button class="btn-default" onclick="genResumen()">
+          <button class="btn-default" onclick="genResumen()" style="margin-left: 8px">
             Ver resumen
-          </button>
-          -->
-          <button
-            class="btn-default"
-            onclick="exportPDF()"
-            style="margin-left: 8px"
-          >
-            Imprimir / Exportar PDF
           </button>
           <button class="btn-danger" onclick="clearAllData()" style="margin-left: auto">Borrar todos los datos</button>
         </div>
