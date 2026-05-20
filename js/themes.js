@@ -4,13 +4,13 @@
  */
 
 const THEME_CONFIG = {
-  0: { name: 'Lunes', color: 'Lila/Púrpura', emoji: '🟣' },
-  1: { name: 'Martes', color: 'Azul', emoji: '🔵' },
-  2: { name: 'Miércoles', color: 'Verde', emoji: '🟢' },
-  3: { name: 'Jueves', color: 'Naranja', emoji: '🟠' },
-  4: { name: 'Viernes', color: 'Rojo/Rosa', emoji: '🔴' },
-  5: { name: 'Sábado', color: 'Teal/Cian', emoji: '🌊' },
-  6: { name: 'Domingo', color: 'Índigo', emoji: '💜' }
+  0: { name: 'Lunes', color: 'Lila/Púrpura', emoji: 'L' },
+  1: { name: 'Martes', color: 'Azul', emoji: 'A' },
+  2: { name: 'Miércoles', color: 'Verde', emoji: 'V' },
+  3: { name: 'Jueves', color: 'Naranja', emoji: 'N' },
+  4: { name: 'Viernes', color: 'Rojo/Rosa', emoji: 'R' },
+  5: { name: 'Sábado', color: 'Teal/Cian', emoji: 'C' },
+  6: { name: 'Domingo', color: 'Índigo', emoji: 'I' }
 };
 
 /**

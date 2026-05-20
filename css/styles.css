@@ -76,8 +76,8 @@
 
 /* JUEVES - Naranja */
 [data-theme="3"] {
-  --bg:#ffe0b2;
-  --surface:#ffe0b2;
+  --bg:#f8ead5;
+  --surface:#fad7a2;
   --surface2:#e65100;
   --onsurface2:#fff;
   --border:rgba(0, 0, 0, 0);
@@ -267,7 +267,7 @@ tbody tr:first-child td{border-top:none}
 
 /* Add btn */
 .add-btn{font-size:12px;padding:5px 14px;border:none;border-radius:var(--r);background:var(--surface2);color:var(--onsurface2);cursor:pointer;font-family:var(--font-mono);font-weight:600;transition:all .12s}
-.add-btn:hover{background:#683ce2;color:var(--onsurface2);border-color:var(--accent)}
+.add-btn:hover{background:var(--bg);color:var(--onsurface);border-color:var(--accent)}
 .add-form{display:none;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:flex-start}
 .add-form.show{display:flex}
 .add-form input,.add-form select{flex:1;min-width:120px;width:auto}
